@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.12;
+pragma solidity ^0.8.9;
 
 contract Math {
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
