@@ -35,6 +35,7 @@ contract DuniswapV2Pair is ERC20, Math {
 
     function mint() public {
         (uint256 _reserve0, uint256 _reserve1, ) = getReserves();
+        // Check contract token balance
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
         uint256 amount0 = balance0 - _reserve0;
@@ -73,10 +74,45 @@ contract DuniswapV2Pair is ERC20, Math {
         return (reserve0, reserve1, 0);
     }
 
+    function burn() public {
+        uint256 balance0 = IERC20(token0).balanceOf(address(this));
+        uint256 balance1 = IERC20(token1).balanceOf(address(this));
+        uint256 liquidity = balanceOf[msg.sender];
+
+        uint256 amount0 = (liquidity * balance0) / totalSupply;
+        uint256 amount1 = (liquidity * balance1) / totalSupply;
+
+        if (amount0 <= 0 || amount1 <= 0) revert InsufficientLiquidityBurned();
+
+        _burn(msg.sender, liquidity);
+
+        _safeTransfer(token0, msg.sender, amount0);
+        _safeTransfer(token1, msg.sender, amount1);
+
+        balance0 = IERC20(token0).balanceOf(address(this));
+        balance1 = IERC20(token1).balanceOf(address(this));
+
+        _update(balance0, balance1);
+
+        emit Burn(msg.sender, amount0, amount1);
+    }
+
     function _update(uint256 balance0, uint256 balance1) private {
         reserve0 = uint112(balance0);
         reserve1 = uint112(balance1);
 
         emit Sync(reserve0, reserve1);
+    }
+
+    function _safeTransfer(
+        address token,
+        address to,
+        uint256 value
+    ) private {
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSignature("transfer(address,uint256)", to, value)
+        );
+        if (!success || (data.length != 0 && !abi.decode(data, (bool))))
+            revert TransferFailed();
     }
 }
