@@ -2,6 +2,7 @@ pragma solidity ^0.8.10;
 
 import "./DuniswapV2Pair.sol";
 import "./interfaces/IDuniswapV2Pair.sol";
+import "forge-std/console2.sol";
 
 contract DuniswapV2Factory {
     error IdenticalAddresses();
@@ -12,7 +13,7 @@ contract DuniswapV2Factory {
         address indexed token0,
         address indexed token1,
         address pair,
-        uint256
+        uint256 numberOfPairs
     );
 
     mapping(address => mapping(address => address)) public pairs;
@@ -32,7 +33,11 @@ contract DuniswapV2Factory {
         if (pairs[token0][token1] != address(0)) revert PairExists();
 
         bytes memory bytecode = type(DuniswapV2Pair).creationCode;
+        // console2.log("Checking DuniswapV2Pair runtime bytecode");
+        // console2.logBytes(bytecode);
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+        console2.log("Checking salt");
+        console2.logBytes32(salt);
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }

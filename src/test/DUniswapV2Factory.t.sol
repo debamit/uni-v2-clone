@@ -10,7 +10,7 @@ interface Vm {
     function expectRevert(bytes calldata) external;
 }
 
-contract ZuniswapV2FactoryTest is DSTest {
+contract DuniswapV2FactoryTest is DSTest {
     Vm vm = Vm(HEVM_ADDRESS);
 
     DuniswapV2Factory factory;
